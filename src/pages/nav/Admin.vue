@@ -1,28 +1,40 @@
 <template>
   <div class="container">
     <div>管理员信息</div>
-    <div><span>用户 ID:</span><span>{{ user.id }}</span></div>
-    <div><span>账号:</span><span>{{ user.account }}</span></div>
-    <div><span>用户组:</span><span>{{ user.group }}</span></div>
-    <div><span>创建时间:</span><span>{{ user.time }}</span></div>
-    <div><span>管理员头像:</span><span>{{ user.head }}</span></div>  
+    <div><span>用户ID:</span><span>{{ id }}</span></div>
+    <div><span>账号:</span><span>{{ account }}</span></div>
+    <div><span>用户组:</span><span>{{ userGroup }}</span></div>
+    <div><span>创建时间:</span><span>{{ ctime }}</span></div>
+    <div><span>管理员头像:</span><img :src="imgUrl"></div>  
   </div>
 </template>
 
 <script>
+import { accountinfo_api } from '../../apis/apis'
 export default {
   data() {
     return {
-      user: {
-        id: 12,
-        account: 1234,
-        group: "超级管理员",
-        time: "2020-02-12",
-        head: "abc",
-      }
+        id: sessionStorage.getItem('id'),
+        account: 0,
+        userGroup: "",
+        ctime: "",
+        imgUrl: "",
     };
   },
-  methods: {},
+  methods: {
+
+  },
+  created(){
+    let {id}=this
+    accountinfo_api({params:{id}}).then(res=>{
+      let {ctime,account,userGroup,imgUrl}=res.data.accountInfo
+      let date = new Date(ctime)
+      this.ctime=date.getFullYear()+'/'+(date.getMonth()+1)+'/'+date.getDate();
+      this.account=account
+      this.userGroup=userGroup
+      this.imgUrl=imgUrl
+    })
+  }
 };
 </script>
 
@@ -39,6 +51,10 @@ export default {
   }
   div:last-child{
     border: 0;
+    display: flex;
+    img{
+      width: 80px;
+    }
   }
 }
 </style>

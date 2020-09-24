@@ -5,18 +5,43 @@
     </div>
     <div class="content">
       <div class="list">
-        <el-table :data="tableData" style="width: 100%" @selection-change="selectionChange">
+        <el-table
+          :data="tableData"
+          style="width: 100%"
+          @selection-change="selectionChange"
+        >
           <el-table-column type="selection" width="55"></el-table-column>
-          <el-table-column prop="account" label="账号" width="180"></el-table-column>
-          <el-table-column prop="userGroup" label="用户组" width="180"></el-table-column>
-          <el-table-column prop="ctime" label="创建时间" width="180"></el-table-column>
+          <el-table-column
+            prop="account"
+            label="账号"
+            width="180"
+          ></el-table-column>
+          <el-table-column
+            prop="userGroup"
+            label="用户组"
+            width="180"
+          ></el-table-column>
+          <el-table-column
+            prop="ctime"
+            label="创建时间"
+            width="180"
+          ></el-table-column>
           <el-table-column label="操作">
             <template slot-scope="scope">
               <el-button
                 size="mini"
-                @click="handleEdit(scope.$index, scope.row),dialogFormVisible = true"
-              >编辑</el-button>
-              <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                @click="
+                  handleEdit(scope.$index, scope.row),
+                    (dialogFormVisible = true)
+                "
+                >编辑</el-button
+              >
+              <el-button
+                size="mini"
+                type="danger"
+                @click="handleDelete(scope.$index, scope.row)"
+                >删除</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
@@ -37,14 +62,23 @@
         <el-button type="success" plain>取消选择</el-button>
       </div>
     </div>
-    <el-dialog class="dialog" title="修改信息" :visible.sync="dialogFormVisible" width="500px">
+    <el-dialog
+      class="dialog"
+      title="修改信息"
+      :visible.sync="dialogFormVisible"
+      width="500px"
+    >
       <el-form>
         <el-form-item label="用户名:">
           <el-input v-model="account" clearable></el-input>
         </el-form-item>
         <el-form-item label="用户组:">
           <el-select v-model="userGroup" placeholder="请选择">
-            <el-option v-for="item in options" :key="item" :value="item"></el-option>
+            <el-option
+              v-for="item in options"
+              :key="item"
+              :value="item"
+            ></el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -81,31 +115,33 @@ export default {
     };
   },
   methods: {
+    repairZero(time) {
+      return time < 10 ? "0" + time : time;
+    },
     // 请求管理员列表函数
     changeDate() {
       let { currentPage, pageSize } = this;
       accountList_api({ params: { currentPage, pageSize } }).then((res) => {
-        let old = res.data.data;
-        // 时间转化
-        for (const obj of old) {
-          let date = new Date(obj.ctime);
-          obj.ctime =
-            date.getFullYear() +
-            "-" +
-            (date.getMonth() + 1) +
-            "-" +
-            date.getDate() +
-            " " +
-            date.getHours() +
-            ":" +
-            date.getMinutes() +
-            ":" +
-            date.getSeconds();
-        }
-        this.tableData = old;
-        this.total = res.data.total;
         if (res.status == 200) {
-          this.tableData = res.data.data;
+          let old = res.data.data;
+          // 时间转化
+          for (const obj of old) {
+            let date = new Date(obj.ctime);
+            obj.ctime =
+              date.getFullYear() +
+              "-" +
+              this.repairZero(date.getMonth() + 1) +
+              "-" +
+              this.repairZero(date.getDate()) +
+              " " +
+              this.repairZero(date.getHours()) +
+              ":" +
+              this.repairZero(date.getMinutes()) +
+              ":" +
+              this.repairZero(date.getSeconds());
+          }
+          this.tableData = old;
+          this.total = res.data.total;
         }
       });
     },
@@ -137,8 +173,7 @@ export default {
         type: "warning",
       })
         .then(() => {
-          removeUser_api({ params: { id: row.id } }).then((res) => {
-            console.log(res);
+          removeUser_api({ params: { id: row.id } }).then(() => {
             this.changeDate();
           });
           this.$message({
