@@ -35,23 +35,26 @@ export default {
       againPwd: "",
       isError: false,
       isPwd:false,
-      id: sessionStorage.getItem("id"),
+      id: localStorage.id,
     };
   },
   methods: {
     // 验证旧密码函数
     checkoldpwd() {
-      // 为空
+      // 旧密码为空
       if (this.oldPwd == "") {
         this.isError = true;
         return false;
+      }
+      // 新密码/确认密码未输入或者不相同
+      if (!(this.newPwd==this.againPwd)||this.newPwd==''||this.againPwd=='') {
+        this.isError = true;
+        return false
       }
       let { oldPwd, id } = this;
       oldPwd_api({ params: { oldPwd, id } }).then((res) => {
         if (res.data.code == 0) {
           this.isError = false;
-        } else {
-          this.isError = true;
         }
       });
     },

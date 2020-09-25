@@ -1,19 +1,19 @@
 <template>
-  <div class="container">
+  <el-card class="container">
     <div class="top">
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
-          <el-form-item label="订单号">
-            <el-input v-model="formInline.user" placeholder="订单号"></el-input>
-          </el-form-item>
-          <el-form-item label="收货人">
-            <el-input v-model="formInline.user" placeholder="收货人"></el-input>
-          </el-form-item>
-          <el-form-item label="手机号">
-            <el-input v-model="formInline.user" placeholder="手机号"></el-input>
-          </el-form-item>
-          <el-form-item label="订单状态">
-            <el-input v-model="formInline.user" placeholder="订单状态"></el-input>
-          </el-form-item>
+        <el-form-item label="订单号">
+          <el-input v-model="formInline.user" placeholder="订单号"></el-input>
+        </el-form-item>
+        <el-form-item label="收货人">
+          <el-input v-model="formInline.user" placeholder="收货人"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="formInline.user" placeholder="手机号"></el-input>
+        </el-form-item>
+        <el-form-item label="订单状态">
+          <el-input v-model="formInline.user" placeholder="订单状态"></el-input>
+        </el-form-item>
         <div class="block">
           <span class="demonstration">选择时间</span>
           <el-date-picker
@@ -27,42 +27,159 @@
         </div>
       </el-form>
     </div>
+    <!-- 表格 -->
     <div class="middle">
       <el-table :data="tableData" border style="width: 100%">
-        <el-table-column fixed prop="date" label="订单号" width="120"></el-table-column>
-        <el-table-column prop="name" label="下单时间" width="120"></el-table-column>
-        <el-table-column prop="province" label="手机号" width="120"></el-table-column>
-        <el-table-column prop="city" label="收货人" width="100"></el-table-column>
-        <el-table-column prop="address" label="配送地址" width="300"></el-table-column>
-        <el-table-column prop="zip" label="送达时间" width="100"></el-table-column>
-        <el-table-column prop="zip" label="用户备注" width="120"></el-table-column>
-        <el-table-column prop="zip" label="订单金额" width="100"></el-table-column>
-        <el-table-column prop="zip" label="订单状态" width="100"></el-table-column>
+        <el-table-column
+          fixed
+          prop="orderNo"
+          label="订单号"
+          width="90"
+        ></el-table-column>
+        <el-table-column
+          prop="orderTime"
+          label="下单时间"
+          width="180"
+        ></el-table-column>
+        <el-table-column
+          prop="phone"
+          label="手机号"
+          width="120"
+        ></el-table-column>
+        <el-table-column
+          prop="consignee"
+          label="收货人"
+          width="120"
+        ></el-table-column>
+        <el-table-column
+          prop="deliverAddress"
+          label="配送地址"
+          width="210"
+        ></el-table-column>
+        <el-table-column
+          prop="deliveryTime"
+          label="送达时间"
+          width="180"
+        ></el-table-column>
+        <el-table-column
+          prop="remarks"
+          label="用户备注"
+          width="120"
+        ></el-table-column>
+        <el-table-column
+          prop="orderAmount"
+          label="订单金额"
+          width="100"
+        ></el-table-column>
+        <el-table-column
+          prop="orderState"
+          label="订单状态"
+          width="100"
+        ></el-table-column>
         <el-table-column fixed="right" label="操作" width="100">
           <template slot-scope="scope">
-            <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-            <el-button type="text" size="small">编辑</el-button>
+            <el-button
+              @click="handleClick(scope.row), (dialogVisible = true)"
+              type="text"
+              size="small"
+              >查看</el-button
+            >
+            <el-button type="text" size="small" @click="update(scope.row)"
+              >编辑</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
     </div>
-    <div class="bottom">
-      <div class="block">
-        <el-pagination
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="currentPage4"
-          :page-sizes="[100, 200, 300, 400]"
-          :page-size="100"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="400"
-        ></el-pagination>
+    <!-- 分页 -->
+    <el-pagination
+      class="bottom"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      :page-sizes="[4, 6, 8, 10]"
+      :page-size="pageSize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total"
+    ></el-pagination>
+    <!-- 订单详情弹框 -->
+    <el-dialog
+      class="details"
+      title="订单详情"
+      :visible.sync="dialogVisible"
+      width="30%"
+    >
+      <div>
+        <span>收货人:</span><span> {{ consignee }}</span>
       </div>
-    </div>
-  </div>
+      <div>
+        <span>联系电话:</span><span> {{ phone }}</span>
+      </div>
+      <div>
+        <span>订单号:</span><span> {{ orderNo }}</span>
+      </div>
+      <div>
+        <span>下单时间:</span><span> {{ orderTime }}</span>
+      </div>
+      <div>
+        <span>送货地址:</span><span> {{ deliverAddress }}</span>
+      </div>
+      <div>
+        <span>送达时间:</span><span> {{ deliveryTime }}</span>
+      </div>
+      <div>
+        <span>备注:</span><span> {{ remarks }}</span>
+      </div>
+      <div>
+        <span>订单金额:</span><span> {{ orderAmount }}</span>
+      </div>
+      <div>
+        <span>订单状态:</span><span> {{ orderState }}</span>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible = false"
+          >确 定</el-button
+        >
+      </div>
+    </el-dialog>
+    <!-- 修改当前订单弹框 -->
+    <el-dialog
+      class="update"
+      title="修改信息"
+      :visible.sync="dialogFormVisible"
+      width="500px"
+    >
+      <el-form label-width="80px">
+        <el-form-item label="收货人:">
+          <el-input v-model="consignee" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="电话:">
+          <el-input v-model="phone" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="送货地址:">
+          <el-input v-model="deliverAddress" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="送达时间:">
+          <el-input v-model="deliveryTime" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="备注:">
+          <el-input v-model="remarks" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="订单状态:">
+          <el-input v-model="orderState" clearable></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="updateOrder">确 定</el-button>
+      </div>
+    </el-dialog>
+  </el-card>
 </template>
 
 <script>
+import { orderList_api, detail_api } from "../../apis/apis";
 export default {
   data() {
     return {
@@ -71,61 +188,141 @@ export default {
         region: "",
       },
       value1: [new Date(2000, 10, 10, 10, 10), new Date(2000, 10, 11, 10, 10)],
-      tableData: [
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1518 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1517 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1519 弄",
-          zip: 200333,
-        },
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          province: "上海",
-          city: "普陀区",
-          address: "上海市普陀区金沙江路 1516 弄",
-          zip: 200333,
-        },
-      ],
-      currentPage1: 5,
-      currentPage2: 5,
-      currentPage3: 5,
-      currentPage4: 4,
+      currentPage: 1,
+      pageSize: 4,
+      tableData: [],
+      total: 1, //总条数
+      id: 0,
+      orderNo: "",
+      orderTime: "",
+      phone: "",
+      consignee: "",
+      deliverAddress: "",
+      deliveryTime: "",
+      remarks: "",
+      orderAmount: "",
+      orderState: "",
+      dialogVisible: false,
+      dialogFormVisible: false,
     };
   },
   methods: {
-    onSubmit() {
-      console.log("submit!");
+    changeDate() {
+      let { currentPage, pageSize } = this;
+      orderList_api({ params: { currentPage, pageSize } }).then((res) => {
+        //  时间转化
+        for (const item of res.data.data) {
+          let date = new Date(item.orderTime);
+          item.orderTime =
+            date.getFullYear() +
+            "-" +
+            this.repairZero(date.getMonth() + 1) +
+            "-" +
+            this.repairZero(date.getDate()) +
+            " " +
+            this.repairZero(date.getHours()) +
+            ":" +
+            this.repairZero(date.getMinutes()) +
+            ":" +
+            this.repairZero(date.getSeconds());
+        }
+        for (const item of res.data.data) {
+          let date = new Date(item.deliveryTime);
+          item.deliveryTime =
+            date.getFullYear() +
+            "-" +
+            this.repairZero(date.getMonth() + 1) +
+            "-" +
+            this.repairZero(date.getDate()) +
+            " " +
+            this.repairZero(date.getHours()) +
+            ":" +
+            this.repairZero(date.getMinutes()) +
+            ":" +
+            this.repairZero(date.getSeconds());
+        }
+        this.tableData = res.data.data;
+        this.total = res.data.total;
+      });
     },
-    // 表格
-    handleClick(row) {
+    repairZero(time) {
+      return time < 10 ? "0" + time : time;
+    },
+    // 点击弹出修改弹框
+    update(row) {
       console.log(row);
+      this.dialogFormVisible = true;
     },
-    // 分页
+    // 确定更改当前订单
+    updateOrder() {},
+    // 查看
+    handleClick(row) {
+      // console.log(row);
+      this.id = row.id;
+      detail_api({ params: { id: this.id } }).then((res) => {
+        //  时间转化
+        let date = new Date(res.data.data.orderTime);
+        res.data.data.orderTime =
+          date.getFullYear() +
+          "-" +
+          this.repairZero(date.getMonth() + 1) +
+          "-" +
+          this.repairZero(date.getDate()) +
+          " " +
+          this.repairZero(date.getHours()) +
+          ":" +
+          this.repairZero(date.getMinutes()) +
+          ":" +
+          this.repairZero(date.getSeconds());
+        //  时间转化
+        let delivery = new Date(res.data.data.deliveryTime);
+        res.data.data.deliveryTime =
+          delivery.getFullYear() +
+          "-" +
+          this.repairZero(date.getMonth() + 1) +
+          "-" +
+          this.repairZero(date.getDate()) +
+          " " +
+          this.repairZero(date.getHours()) +
+          ":" +
+          this.repairZero(date.getMinutes()) +
+          ":" +
+          this.repairZero(date.getSeconds());
+        let {
+          orderNo,
+          orderTime,
+          phone,
+          consignee,
+          deliverAddress,
+          deliveryTime,
+          remarks,
+          orderAmount,
+          orderState,
+        } = res.data.data;
+        (this.orderNo = orderNo),
+          (this.orderTime = orderTime),
+          (this.phone = phone),
+          (this.consignee = consignee),
+          (this.deliverAddress = deliverAddress),
+          (this.deliveryTime = deliveryTime),
+          (this.remarks = remarks),
+          (this.orderAmount = orderAmount),
+          (this.orderState = orderState);
+      });
+    },
+    // 点击每页显示数据切换函数
     handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+      this.pageSize = val;
+      this.changeDate();
     },
+    // 点击跳转页面触发的函数
     handleCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+      this.currentPage = val;
+      this.changeDate();
     },
+  },
+  created() {
+    this.changeDate();
   },
 };
 </script>
@@ -133,12 +330,9 @@ export default {
 <style lang="less" scoped>
 .container {
   background-color: #fff;
-  padding-top: 10px;
-  box-sizing: border-box;
-  height: 100%;
   .top {
     margin-left: 10px;
-    margin-bottom: 50px;
+    margin-bottom: 10px;
     .block {
       .demonstration {
         color: #606266;
@@ -150,7 +344,18 @@ export default {
     }
   }
   .bottom {
-    margin-top: 30px;
+    margin: 10px 0;
+  }
+  .details {
+    div {
+      margin-bottom: 10px;
+      span:first-child {
+        text-align: right;
+        display: inline-block;
+        width: 100px;
+        margin-right: 20px;
+      }
+    }
   }
 }
 </style>

@@ -8,7 +8,6 @@
       <el-table class="list" :data="tableData" style="width: 100%">
         <el-table-column type="expand">
           <template slot-scope="props">
-
             <el-form label-position="left" inline class="demo-table-expand">
               <el-form-item label="商品 ID">
                 <span>{{ props.row.id }}</span>
@@ -23,7 +22,7 @@
                 <span>{{ props.row.price }}</span>
               </el-form-item>
               <el-form-item label="商品图片">
-                <img v-for="item in props.row.imgUrl" :key="item.imgUrl" :src="item" alt="">
+                <img alt="" />
               </el-form-item>
               <el-form-item label="创建时间">
                 <span>{{ props.row.ctime }}</span>
@@ -43,8 +42,8 @@
         <el-table-column label="商品名称" prop="name"> </el-table-column>
         <el-table-column label="所属分类" prop="category"> </el-table-column>
         <el-table-column label="商品价格" prop="price"> </el-table-column>
-        <el-table-column label="商品图片" prop="imgUrls"
-          ><img :src="imgUrls" alt=""
+        <el-table-column label="商品图片" prop="imgUrl"
+          ><img src="imgUrls" alt=""
         /></el-table-column>
         <el-table-column label="描述" prop="goodsDesc"> </el-table-column>
         <el-table-column label="操作">
@@ -77,12 +76,12 @@
         layout="total, sizes, prev, pager, next, jumper"
         :total="total"
       ></el-pagination>
-      <!-- 修改当前商品信息 -->
+      <!-- 修改当前商品弹框 -->
       <el-dialog
         class="dialog"
         title="修改信息"
         :visible.sync="dialogFormVisible"
-        width="400px"
+        width="500px"
       >
         <el-form>
           <el-form-item label="商品名称:">
@@ -95,7 +94,15 @@
             <el-input v-model="price" clearable></el-input>
           </el-form-item>
           <el-form-item label="商品图片:">
-            <el-input v-model="imgUrl" clearable></el-input>
+            <el-upload
+              class="avatar-uploader"
+              action="http://127.0.0.1:5000/goods/goods_img_upload"
+              :show-file-list="false"
+              :on-success="handleAvatarSuccess"
+            >
+              <img v-if="imgUrl" :src="imgUrl" class="avatar" />
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
           </el-form-item>
           <el-form-item label="商品描述:">
             <el-input v-model="goodsDesc" clearable></el-input>
@@ -117,7 +124,6 @@ export default {
     return {
       value: true,
       tableData: [],
-      // imgUrls: [],
       total: 0, //总条数
       currentPage: 1, //当前的页数
       pageSize: 6, //每页显示的条数
@@ -172,6 +178,7 @@ export default {
     // 修改当前商品弹出模态框函数
     handleEdit(index, row) {
       this.id = row.id;
+    console.log(this.id);
       this.dialogFormVisible = false;
     },
     // 删除当前商品函数
@@ -207,12 +214,24 @@ export default {
       this.currentPage = val;
       this.changGoodsList();
     },
+    // 图片上传
+    handleAvatarSuccess(res){
+      if(res.code==0){
+         this.imgUrl = res.imgUrl;
+      }
+    },
     // 确定更改当前商品函数
     updateGoods() {
       let { name, category, price, imgUrl, goodsDesc, id } = this;
       goodsUpdate_api({ name, category, price, imgUrl, goodsDesc, id }).then(
         (res) => {
-          // this.changeDate();
+          this.$message({
+            type: "success",
+            message: "商品修改成功!",
+          });
+          this.name='', this.category='', this.price='', this.imgUrl='', this.goodsDesc=''
+          this.changGoodsList();
+          this.dialogFormVisible=false
           console.log(res);
         }
       );
@@ -243,6 +262,29 @@ export default {
     display: flex;
     align-items: center;
   }
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-uploader .el-upload:hover {
+    border-color: #409eff;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 150px;
+    height: 150px;
+    line-height: 150px;
+    text-align: center;
+  }
+  .avatar {
+    width: 150px;
+    height: 150px;
+    display: block;
+  }
 }
 .demo-table-expand {
   font-size: 0;
@@ -256,9 +298,10 @@ export default {
   margin-bottom: 0;
   width: 50%;
 }
-.dialog{
-  .el-form-item{
+.dialog {
+  .el-form-item {
     display: flex;
+    margin-bottom: 10px;
   }
 }
 </style>

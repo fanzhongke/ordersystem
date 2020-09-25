@@ -3,7 +3,7 @@
     <el-aside width="200px">
       <div class="head">
         <img :src="head.src" alt />
-        <span>{{head.name}}</span>
+        <span>{{ head.name }}</span>
       </div>
       <el-menu
         router
@@ -15,25 +15,29 @@
         active-text-color="#ffd04b"
       >
         <!-- 导航菜单 -->
-        <div v-for="(item,index) in nav" :key="index">
+        <div v-for="(item, index) in nav" :key="index">
           <!-- 折叠菜单 -->
           <el-submenu :index="item.index" v-if="item.children">
             <!-- 大标题及图标 -->
             <template slot="title">
               <i :class="item.icon"></i>
-              <span>{{item.name}}</span>
+              <span>{{ item.name }}</span>
             </template>
             <el-menu-item-group>
-              <el-menu-item :index="child.index" v-for="child in item.children" :key="child.index">
+              <el-menu-item
+                :index="child.index"
+                v-for="child in item.children"
+                :key="child.index"
+              >
                 <i :class="child.icon"></i>
-                <span slot="title">{{child.name}}</span>
+                <span slot="title">{{ child.name }}</span>
               </el-menu-item>
             </el-menu-item-group>
           </el-submenu>
           <!-- 一级菜单 -->
           <el-menu-item :index="item.index" v-else>
             <i :class="item.icon"></i>
-            <span slot="title">{{item.name}}</span>
+            <span slot="title">{{ item.name }}</span>
           </el-menu-item>
         </div>
       </el-menu>
@@ -47,8 +51,8 @@
           <el-breadcrumb-item>活动详情</el-breadcrumb-item>
         </el-breadcrumb>
         <div class="header-r">
-          <div>{{username}}</div>
-          <router-link to='/nav/admin'><img :src="headerR.src"></router-link>
+          <div @click="loginBtn">{{ title }}</div>
+          <img class="userImg" @click="header" :src="headerR" />
         </div>
       </el-header>
       <el-main>
@@ -59,22 +63,24 @@
 </template>
 
 <script>
+import { token_api,accountinfo_api } from "../apis/apis";
 export default {
   data() {
     return {
       // 头像姓名
       head: { name: "美团外卖", src: require("../assets/images/head.png") },
       // 右边姓名头像
-      headerR:{src:require('../assets/images/head.png')},
-      username:'',
+      headerR: "",
+      title: "您好,请登录",
       // 导航列表
       nav: [
-        { index: "/nav/main", name: "后台首页", icon: "el-icon-setting" },
-        { index: "/nav/order", name: "订单管理", icon: "el-icon-setting" },
+        { index: "/nav/main", name: "后台首页", icon: "el-icon-setting", role:['super','normal']},
+        { index: "/nav/order", name: "订单管理", icon: "el-icon-setting" , role:['super','normal']},
         {
           index: "1",
           name: "商品管理",
           icon: "el-icon-setting",
+          role:['super',],
           children: [
             {
               index: "/nav/orderlist",
@@ -93,11 +99,12 @@ export default {
             },
           ],
         },
-        { index: "/nav/store", name: "店铺管理", icon: "el-icon-setting" },
+        { index: "/nav/store", name: "店铺管理", icon: "el-icon-setting" , role:['super','normal']},
         {
           index: "2",
           name: "账号管理",
           icon: "el-icon-setting",
+          role:['super',],
           children: [
             {
               index: "/nav/accountlist",
@@ -120,6 +127,7 @@ export default {
           index: "3",
           name: "销售统计",
           icon: "el-icon-setting",
+          role:['super'],
           children: [
             {
               index: "/nav/productstatistics",
@@ -136,10 +144,42 @@ export default {
       ],
     };
   },
-  created(){
-    let username = sessionStorage.getItem('name');
-    this.username=username;
-  }
+  methods: {
+    header() {
+      this.$router.push("/nav/admin");
+    },
+    loginBtn() {
+      if (this.title=='您好,请登录') {
+        this.$router.push('/')
+      }
+    },
+  },
+  created() {
+    // 用户权限
+    this.nav=this.nav.filter((obj)=>obj.role.includes(localStorage.role))
+    // 验证token是否过期
+    token_api({ params: {token:localStorage.token }}).then((res) => {
+      if (res.data.code == 0) {
+        this.title = localStorage.name
+      }else{
+        this.title='您好,请登录'
+      }
+    });
+    // 获取用户信息
+    accountinfo_api({params:{id:localStorage.id}}).then(res=>{
+      // 存到本地
+      this.headerR=res.data.accountInfo.imgUrl
+      localStorage.account=res.data.accountInfo.account
+      localStorage.ctime=res.data.accountInfo.ctime
+      localStorage.userGroup=res.data.accountInfo.userGroup
+    })
+    // 重新渲染头像
+    this.$bus.on('updateImg',(newImg)=>{
+      let oldUrl = this.headerR
+      let newUrl = oldUrl.substring(0,oldUrl.lastIndexOf('/')+1)
+      this.headerR=newUrl+newImg
+    })
+  },
 };
 </script>
 
@@ -151,11 +191,12 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  .header-r{
+  .header-r {
     display: flex;
     align-items: center;
-    img{
-      width: 40px;
+    .userImg {
+      width: 50px;
+      border-radius: 50%;
     }
   }
 }

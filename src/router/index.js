@@ -4,7 +4,7 @@ import Login from '../pages/Login'
 Vue.use(VueRouter)
 
 export default new VueRouter({
-  //mode: 'history',    //历史模式   
+  mode: 'history',    //历史模式   
   base: process.env.BASE_URL,
   routes: [
     {

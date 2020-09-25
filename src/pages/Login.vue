@@ -25,9 +25,10 @@ export default {
     loginClick() {
       login_api({ account: this.name, password: this.pwd }).then((res) => {
         if (res.data.code == 0) {
-          sessionStorage.setItem('id',res.data.id)
-          sessionStorage.setItem('name',this.name)
-          
+          localStorage.token=res.data.token// 保存token
+          localStorage.name=this.name
+          localStorage.id=res.data.id // 当前id
+          localStorage.role=res.data.role// 当前用户角色
           this.$router.push("/nav/main");
           this.$message({
             message: "小米粥提示:登录成功",
