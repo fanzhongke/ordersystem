@@ -7,53 +7,61 @@
       <!-- 表格 -->
       <el-table class="list" :data="tableData" style="width: 100%">
         <el-table-column type="expand">
-          <template slot-scope="props">
-            <el-form label-position="left" inline class="demo-table-expand">
-              <el-form-item label="商品 ID">
-                <span>{{ props.row.id }}</span>
-              </el-form-item>
-              <el-form-item label="商品名称">
-                <span>{{ props.row.name }}</span>
-              </el-form-item>
-              <el-form-item label="所属分类">
-                <span>{{ props.row.category }}</span>
-              </el-form-item>
-              <el-form-item label="商品价格">
-                <span>{{ props.row.price }}</span>
-              </el-form-item>
-              <el-form-item label="商品图片">
-                <img alt="" />
-              </el-form-item>
-              <el-form-item label="创建时间">
-                <span>{{ props.row.ctime }}</span>
-              </el-form-item>
-              <el-form-item label="商品评价">
-                <span>{{ props.row.rating }}</span>
-              </el-form-item>
-              <el-form-item label="商品销量">
-                <span>{{ props.row.sellCount }}</span>
-              </el-form-item>
-              <el-form-item label="商品描述">
-                <span>{{ props.row.goodsDesc }}</span>
-              </el-form-item>
-            </el-form>
+          <template slot-scope="scope">
+            <div>
+              <span>商品 ID:</span>
+              <span>{{ scope.row.id }}</span>
+            </div>
+            <div>
+              <span>商品名称:</span>
+              <span>{{ scope.row.name }}</span>
+            </div>
+            <div>
+              <span>所属分类:</span>
+              <span>{{ scope.row.category }}</span>
+            </div>
+            <div>
+              <span>商品价格:</span>
+              <span>{{ scope.row.price }}</span>
+            </div>
+            <div>
+              <span>创建时间:</span>
+              <span>{{ scope.row.ctime }}</span>
+            </div>
+            <div>
+              <span>商品评价:</span>
+              <span>{{ scope.row.rating }}</span>
+            </div>
+            <div>
+              <span>商品销量:</span>
+              <span>{{ scope.row.sellCount }}</span>
+            </div>
+            <div>
+              <span>商品描述:</span>
+              <span>{{ scope.row.goodsDesc }}</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="商品名称" prop="name"> </el-table-column>
         <el-table-column label="所属分类" prop="category"> </el-table-column>
         <el-table-column label="商品价格" prop="price"> </el-table-column>
-        <el-table-column label="商品图片" prop="imgUrl"
-          ><img src="imgUrls" alt=""
-        /></el-table-column>
+        <el-table-column label="商品图片">
+          <template slot-scope="scope">
+            <img
+              :src="
+                'http://127.0.0.1:5000/upload/imgs/goods_img/' +
+                scope.row.imgUrl
+              "
+            />
+          </template>
+        </el-table-column>
         <el-table-column label="描述" prop="goodsDesc"> </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button
               type="primary"
               size="mini"
-              @click="
-                handleEdit(scope.$index, scope.row), (dialogFormVisible = true)
-              "
+              @click="handleEdit(scope.$index, scope.row)"
               >编辑</el-button
             >
             <el-button
@@ -71,7 +79,7 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="currentPage"
-        :page-sizes="[6, 8, 10, 20]"
+        :page-sizes="[5, 7, 8, 10]"
         :page-size="pageSize"
         layout="total, sizes, prev, pager, next, jumper"
         :total="total"
@@ -83,29 +91,41 @@
         :visible.sync="dialogFormVisible"
         width="500px"
       >
-        <el-form>
+        <el-form :model="form">
           <el-form-item label="商品名称:">
-            <el-input v-model="name" clearable></el-input>
+            <el-input v-model="form.name" clearable></el-input>
           </el-form-item>
-          <el-form-item label="商品分类:">
-            <el-input v-model="category" clearable></el-input>
+          <el-form-item label="商品分类">
+            <el-select v-model="form.category" placeholder="请选择分类">
+              <el-option
+                v-for="(item, index) in categories"
+                :key="index"
+                :label="item.cateName"
+                :value="item.cateName"
+              ></el-option>
+            </el-select>
           </el-form-item>
           <el-form-item label="商品价格:">
-            <el-input v-model="price" clearable></el-input>
+            <el-input-number
+              v-model="form.price"
+              :min="1"
+              :precision="2"
+              :step="1.0"
+            ></el-input-number>
           </el-form-item>
           <el-form-item label="商品图片:">
             <el-upload
-              class="avatar-uploader"
+              class="goods-uploader"
               action="http://127.0.0.1:5000/goods/goods_img_upload"
               :show-file-list="false"
               :on-success="handleAvatarSuccess"
             >
-              <img v-if="imgUrl" :src="imgUrl" class="avatar" />
+              <img v-if="form.imgUrl" :src="form.imgUrl" class="avatar" />
               <i v-else class="el-icon-plus avatar-uploader-icon"></i>
             </el-upload>
           </el-form-item>
           <el-form-item label="商品描述:">
-            <el-input v-model="goodsDesc" clearable></el-input>
+            <el-input type="textarea" v-model="form.goodsDesc"></el-input>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -118,68 +138,59 @@
 </template>
 
 <script>
-import { goodsList_api, goodsDel_api, goodsUpdate_api } from "../../apis/apis";
+import {
+  goodsList_api,
+  goodsDel_api,
+  goodsUpdate_api,
+  categories_api,
+} from "../../apis/apis";
+import { ChinaTime } from "../../utils/utils";
 export default {
   data() {
     return {
-      value: true,
       tableData: [],
       total: 0, //总条数
       currentPage: 1, //当前的页数
-      pageSize: 6, //每页显示的条数
+      pageSize: 5, //每页显示的条数
       dialogFormVisible: false,
       formLabelWidth: "100px",
+      imageUrl: "",
       // 修改时的参数
-      name: "",
-      category: "",
-      price: "",
-      imgUrl: "",
-      goodsDesc: "",
-      id: "",
+      form: {
+        name: "",
+        category: "",
+        price: "",
+        imgUrl: "",
+        goodsDesc: "",
+        id: 0,
+      },
+      categories: [],
     };
   },
   methods: {
-    // 不满10补零函数
-    repairZero(time) {
-      return time < 10 ? "0" + time : time;
-    },
     // 请求商品列表函数
     changGoodsList() {
       let { currentPage, pageSize } = this;
       goodsList_api({ params: { currentPage, pageSize } }).then((res) => {
         if (res.status == 200) {
-          this.total = res.data.total;
-          /* let arr = [];
-          for (const item of res.data.data) {
-            arr.push(item.imgUrl);
-          }
-          this.imgUrls = arr;
-          console.log(this.imgUrls); */
           // 处理时间操作
           for (const obj of res.data.data) {
-            let date = new Date(obj.ctime);
-            obj.ctime =
-              date.getFullYear() +
-              "-" +
-              this.repairZero(date.getMonth() + 1) +
-              "-" +
-              this.repairZero(date.getDate()) +
-              " " +
-              this.repairZero(date.getHours()) +
-              ":" +
-              this.repairZero(date.getMinutes()) +
-              ":" +
-              this.repairZero(date.getSeconds());
+            obj.ctime = ChinaTime(obj.ctime);
           }
           this.tableData = res.data.data;
+          this.total = res.data.total;
         }
       });
     },
     // 修改当前商品弹出模态框函数
     handleEdit(index, row) {
-      this.id = row.id;
-    console.log(this.id);
-      this.dialogFormVisible = false;
+      this.form.id = row.id;
+      this.dialogFormVisible = true;
+      // 获取商品分类
+      categories_api().then((res) => {
+        // console.log(res.data.categories);
+        this.categories = res.data.categories;
+      });
     },
     // 删除当前商品函数
     handleDelete(index, row) {
@@ -215,26 +226,26 @@ export default {
       this.changGoodsList();
     },
     // 图片上传
-    handleAvatarSuccess(res){
-      if(res.code==0){
-         this.imgUrl = res.imgUrl;
+    handleAvatarSuccess(res) {
+      if (res.code == 0) {
+        this.form.imgUrl = res.imgUrl;
       }
     },
     // 确定更改当前商品函数
     updateGoods() {
-      let { name, category, price, imgUrl, goodsDesc, id } = this;
-      goodsUpdate_api({ name, category, price, imgUrl, goodsDesc, id }).then(
-        (res) => {
+      goodsUpdate_api(this.form).then((res) => {
+        console.log(res);
+        if (res.data.code == 0) {
+          this.dialogFormVisible = false;
+          this.changGoodsList();
           this.$message({
             type: "success",
             message: "商品修改成功!",
           });
-          this.name='', this.category='', this.price='', this.imgUrl='', this.goodsDesc=''
-          this.changGoodsList();
-          this.dialogFormVisible=false
+          this.form = {};
           console.log(res);
         }
-      );
+      });
     },
   },
   created() {
@@ -245,6 +256,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
+// 标题
 .title {
   display: flex;
   justify-content: space-between;
@@ -256,12 +268,20 @@ export default {
   border-bottom: 1px solid #ebeef5;
 }
 .content {
+  // 表格
+  .list {
+    img {
+      width: 60px;
+    }
+  }
+  // 分页
   .page {
     margin-top: 10px;
     background-color: #fff;
     display: flex;
     align-items: center;
   }
+  // 上传图片
   .avatar-uploader .el-upload {
     border: 1px dashed #d9d9d9;
     border-radius: 6px;
@@ -285,23 +305,12 @@ export default {
     height: 150px;
     display: block;
   }
-}
-.demo-table-expand {
-  font-size: 0;
-}
-.demo-table-expand label {
-  width: 90px;
-  color: #99a9bf;
-}
-.demo-table-expand .el-form-item {
-  margin-right: 0;
-  margin-bottom: 0;
-  width: 50%;
-}
-.dialog {
-  .el-form-item {
-    display: flex;
-    margin-bottom: 10px;
+  // 修改弹框
+  .dialog {
+    .el-form-item {
+      display: flex;
+      margin-bottom: 10px;
+    }
   }
 }
 </style>

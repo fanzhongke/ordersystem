@@ -14,21 +14,24 @@
       <span>创建时间:</span><span> {{ ctime }}</span>
     </div>
     <div>
-      <span>管理员头像:</span
-      ><el-upload
+      <span>管理员头像:</span>
+      <el-upload
         action="http://127.0.0.1:5000/users/avatar_upload"
-        :show-file-list="false"
+        list-type="picture-card"
         :on-success="handleAvatarSuccess"
         :data="params"
       >
-        <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+        <i class="el-icon-plus"></i>
       </el-upload>
+      <el-dialog>
+        <img width="100%" :src="imageUrl" alt="" />
+      </el-dialog>
     </div>
   </div>
 </template>
 
 <script>
+import { ChinaTime } from "../../utils/utils";
 export default {
   data() {
     return {
@@ -43,19 +46,17 @@ export default {
   methods: {
     handleAvatarSuccess(res) {
       if (res.code == 0) {
+        this.$message({
+          type: "success",
+          message: "修改成功!",
+        });
         this.$bus.emit("updateImg", res.imgUrl);
       }
     },
   },
   created() {
     // 转化时间
-    let date = new Date(this.ctime);
-    this.ctime =
-      date.getFullYear() +
-      "/" +
-      (date.getMonth() + 1) +
-      "/" +
-      date.getDate();
+    this.ctime = ChinaTime(this.ctime);
   },
 };
 </script>

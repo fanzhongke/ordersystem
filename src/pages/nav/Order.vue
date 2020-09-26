@@ -78,10 +78,7 @@
         ></el-table-column>
         <el-table-column fixed="right" label="操作" width="100">
           <template slot-scope="scope">
-            <el-button
-              @click="handleClick(scope.row), (dialogVisible = true)"
-              type="text"
-              size="small"
+            <el-button @click="handleClick(scope.row)" type="text" size="small"
               >查看</el-button
             >
             <el-button type="text" size="small" @click="update(scope.row)"
@@ -109,33 +106,35 @@
       :visible.sync="dialogVisible"
       width="30%"
     >
-      <div>
-        <span>收货人:</span><span> {{ consignee }}</span>
-      </div>
-      <div>
-        <span>联系电话:</span><span> {{ phone }}</span>
-      </div>
-      <div>
-        <span>订单号:</span><span> {{ orderNo }}</span>
-      </div>
-      <div>
-        <span>下单时间:</span><span> {{ orderTime }}</span>
-      </div>
-      <div>
-        <span>送货地址:</span><span> {{ deliverAddress }}</span>
-      </div>
-      <div>
-        <span>送达时间:</span><span> {{ deliveryTime }}</span>
-      </div>
-      <div>
-        <span>备注:</span><span> {{ remarks }}</span>
-      </div>
-      <div>
-        <span>订单金额:</span><span> {{ orderAmount }}</span>
-      </div>
-      <div>
-        <span>订单状态:</span><span> {{ orderState }}</span>
-      </div>
+      <el-form :model="form" label-width="80px">
+        <div>
+          <span>收货人:</span><span> {{ form.consignee }}</span>
+        </div>
+        <div>
+          <span>联系电话:</span><span> {{ form.phone }}</span>
+        </div>
+        <div>
+          <span>订单号:</span><span> {{ form.orderNo }}</span>
+        </div>
+        <div>
+          <span>下单时间:</span><span> {{ form.orderTime }}</span>
+        </div>
+        <div>
+          <span>送货地址:</span><span> {{ form.deliverAddress }}</span>
+        </div>
+        <div>
+          <span>送达时间:</span><span> {{ form.deliveryTime }}</span>
+        </div>
+        <div>
+          <span>备注:</span><span> {{ form.remarks }}</span>
+        </div>
+        <div>
+          <span>订单金额:</span><span> {{ form.orderAmount }}</span>
+        </div>
+        <div>
+          <span>订单状态:</span><span> {{ form.orderState }}</span>
+        </div>
+      </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="dialogVisible = false"
@@ -148,26 +147,34 @@
       class="update"
       title="修改信息"
       :visible.sync="dialogFormVisible"
-      width="500px"
+      width="600px"
     >
-      <el-form label-width="80px">
+      <el-form :model="form" label-width="80px">
         <el-form-item label="收货人:">
-          <el-input v-model="consignee" clearable></el-input>
+          <el-input v-model="form.consignee" clearable></el-input>
         </el-form-item>
         <el-form-item label="电话:">
-          <el-input v-model="phone" clearable></el-input>
+          <el-input v-model="form.phone" clearable></el-input>
         </el-form-item>
         <el-form-item label="送货地址:">
-          <el-input v-model="deliverAddress" clearable></el-input>
+          <el-input v-model="form.deliverAddress" clearable></el-input>
         </el-form-item>
         <el-form-item label="送达时间:">
-          <el-input v-model="deliveryTime" clearable></el-input>
+          <el-date-picker
+            v-model="form.deliveryTime"
+            type="datetime"
+            placeholder="选择日期时间"
+          >
+          </el-date-picker>
         </el-form-item>
         <el-form-item label="备注:">
-          <el-input v-model="remarks" clearable></el-input>
+          <el-input v-model="form.remarks" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="订单金额:">
+          <el-input v-model="form.orderAmount" clearable></el-input>
         </el-form-item>
         <el-form-item label="订单状态:">
-          <el-input v-model="orderState" clearable></el-input>
+          <el-input v-model="form.orderState" clearable></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -179,7 +186,9 @@
 </template>
 
 <script>
-import { orderList_api, detail_api } from "../../apis/apis";
+
+import { orderList_api, detail_api,edit_api } from "../../apis/apis";
+import { ChinaTime,UTCTime } from "../../utils/utils";
 export default {
   data() {
     return {
@@ -188,126 +197,77 @@ export default {
         region: "",
       },
       value1: [new Date(2000, 10, 10, 10, 10), new Date(2000, 10, 11, 10, 10)],
-      currentPage: 1,
-      pageSize: 4,
-      tableData: [],
+      currentPage: 1, //当前页数
+      pageSize: 4, //页条数
+      tableData: [], //总数据
       total: 1, //总条数
-      id: 0,
-      orderNo: "",
-      orderTime: "",
-      phone: "",
-      consignee: "",
-      deliverAddress: "",
-      deliveryTime: "",
-      remarks: "",
-      orderAmount: "",
-      orderState: "",
-      dialogVisible: false,
-      dialogFormVisible: false,
+      // 修改时的数据
+      form: {
+        id: 0,
+        orderNo: "",
+        orderTime: "",
+        phone: "",
+        consignee: "",
+        deliverAddress: "",
+        deliveryTime: "",
+        remarks: "",
+        orderAmount: "",
+        orderState: "",
+      },
+      dialogVisible: false, //订单详情弹框状态
+      dialogFormVisible: false, //修改当前订单弹框状态
     };
   },
   methods: {
+    // 获取列表数据
     changeDate() {
       let { currentPage, pageSize } = this;
       orderList_api({ params: { currentPage, pageSize } }).then((res) => {
         //  时间转化
         for (const item of res.data.data) {
-          let date = new Date(item.orderTime);
-          item.orderTime =
-            date.getFullYear() +
-            "-" +
-            this.repairZero(date.getMonth() + 1) +
-            "-" +
-            this.repairZero(date.getDate()) +
-            " " +
-            this.repairZero(date.getHours()) +
-            ":" +
-            this.repairZero(date.getMinutes()) +
-            ":" +
-            this.repairZero(date.getSeconds());
+          item.orderTime = ChinaTime(item.orderTime);
         }
         for (const item of res.data.data) {
-          let date = new Date(item.deliveryTime);
-          item.deliveryTime =
-            date.getFullYear() +
-            "-" +
-            this.repairZero(date.getMonth() + 1) +
-            "-" +
-            this.repairZero(date.getDate()) +
-            " " +
-            this.repairZero(date.getHours()) +
-            ":" +
-            this.repairZero(date.getMinutes()) +
-            ":" +
-            this.repairZero(date.getSeconds());
+          item.deliveryTime = ChinaTime(item.deliveryTime);
         }
         this.tableData = res.data.data;
         this.total = res.data.total;
       });
     },
-    repairZero(time) {
-      return time < 10 ? "0" + time : time;
-    },
     // 点击弹出修改弹框
     update(row) {
       console.log(row);
+      // 拷贝
+      this.form = JSON.parse(JSON.stringify(row));
       this.dialogFormVisible = true;
     },
     // 确定更改当前订单
-    updateOrder() {},
+    updateOrder() {
+      this.form.deliveryTime=UTCTime(this.form.deliveryTime)
+       this.form.orderTime=UTCTime(this.form.orderTime)
+      // console.log(this.form);
+      edit_api(this.form).then(res=>{
+        if (res.status==200) {
+          this.$message({
+          type: "success",
+          message: "订单修改成功!",
+        });
+        this.dialogFormVisible = false
+        this.changeDate()
+        }
+      })
+    },
     // 查看
     handleClick(row) {
-      // console.log(row);
-      this.id = row.id;
-      detail_api({ params: { id: this.id } }).then((res) => {
+      console.log(row.id);
+      // 显示弹框
+      this.dialogVisible = true;
+      // 发送请求
+      detail_api({ params: { id: row.id } }).then((res) => {
         //  时间转化
-        let date = new Date(res.data.data.orderTime);
-        res.data.data.orderTime =
-          date.getFullYear() +
-          "-" +
-          this.repairZero(date.getMonth() + 1) +
-          "-" +
-          this.repairZero(date.getDate()) +
-          " " +
-          this.repairZero(date.getHours()) +
-          ":" +
-          this.repairZero(date.getMinutes()) +
-          ":" +
-          this.repairZero(date.getSeconds());
-        //  时间转化
-        let delivery = new Date(res.data.data.deliveryTime);
-        res.data.data.deliveryTime =
-          delivery.getFullYear() +
-          "-" +
-          this.repairZero(date.getMonth() + 1) +
-          "-" +
-          this.repairZero(date.getDate()) +
-          " " +
-          this.repairZero(date.getHours()) +
-          ":" +
-          this.repairZero(date.getMinutes()) +
-          ":" +
-          this.repairZero(date.getSeconds());
-        let {
-          orderNo,
-          orderTime,
-          phone,
-          consignee,
-          deliverAddress,
-          deliveryTime,
-          remarks,
-          orderAmount,
-          orderState,
-        } = res.data.data;
-        (this.orderNo = orderNo),
-          (this.orderTime = orderTime),
-          (this.phone = phone),
-          (this.consignee = consignee),
-          (this.deliverAddress = deliverAddress),
-          (this.deliveryTime = deliveryTime),
-          (this.remarks = remarks),
-          (this.orderAmount = orderAmount),
-          (this.orderState = orderState);
+        res.data.data.orderTime = ChinaTime(res.data.data.orderTime);
+        res.data.data.deliveryTime = ChinaTime(res.data.data.deliveryTime);
+        this.form = res.data.data;
       });
     },
     // 点击每页显示数据切换函数
@@ -352,7 +312,7 @@ export default {
       span:first-child {
         text-align: right;
         display: inline-block;
-        width: 100px;
+        width: 80px;
         margin-right: 20px;
       }
     }

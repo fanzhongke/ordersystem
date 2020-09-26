@@ -41,7 +41,7 @@ export const goodsDel_api = params => api.get('/goods/del',params)
 // 获取修改当前商品api接口
 export const goodsUpdate_api = params => api.post('/goods/edit',params)
 // 获取所有分类api接口
-export const categories_api = params => api.get('/goods/categories',params)
+export const categories_api = () => api.get('/goods/categories')
 // 获取添加商品api接口
 export const addGoods_api = params => api.post('/goods/add',params)
 
@@ -50,5 +50,13 @@ export const addGoods_api = params => api.post('/goods/add',params)
 export const orderList_api = params => api.get('/order/list',params)
 // 获取订单详情api接口
 export const detail_api = params => api.get('/order/detail',params)
+// 获取修改订单api接口
+export const edit_api = params => api.post('/order/edit',params)
+
+// ==========================店铺管理API=================================
+// 获取店铺详情api接口
+export const shopInfo_api = params => api.get('/shop/info',params)
+
+
 
 
