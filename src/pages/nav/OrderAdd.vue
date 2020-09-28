@@ -8,7 +8,7 @@
         <el-input v-model="form.name"></el-input>
       </el-form-item>
       <el-form-item label="商品分类">
-        <el-select v-model="form.category" placeholder="请选择分类">
+        <el-select v-model="form.category.cateName">
           <el-option
             v-for="(item, index) in categories"
             :key="index"
@@ -34,7 +34,7 @@
           <i class="el-icon-plus"></i>
         </el-upload>
         <el-dialog>
-          <img width="100%" :src="form.imgUrl" alt="" />
+          <img width="100%" :src="uploadImgUrl" alt="" />
         </el-dialog>
       </el-form-item>
       <el-form-item label="商品描述:">
@@ -60,27 +60,28 @@ export default {
   data() {
     return {
       form: {
-        name: "",
-        category: "",
-        goodsDesc: "",
-        price: "1",
-        imgUrl: "",
+        name: "",//商品名称
+        category: "",//商品分类
+        goodsDesc: "",//商品描述
+        price: 1,//商品描述
+        imgUrl: "",//商品图片
       },
-      categories: [],
+      categories: [],//商品分类列表
+      uploadImgUrl:'',//商品图片上传
     };
   },
   methods: {
     // 商品图片上传
     handleAvatarSuccess(res) {
-      console.log(res.imgUrl);
       if (res.code == 0) {
-        console.log(res.imgUrl);
+        // 保存上传的图片
         this.form.imgUrl = res.imgUrl;
       }
     },
     // 商品添加按钮
     goodsAdd() {
-      console.log(this.form);
+      this.form.category=this.form.category.cateName
+      // console.log(this.form);
       addGoods_api(this.form).then((res) => {
         this.$message({
           type: "success",
@@ -93,7 +94,10 @@ export default {
   },
   created() {
     categories_api().then((res) => {
+      // 保存商品分类
       this.categories = res.data.categories;
+      // 设置一个显示分类
+      this.form.category=res.data.categories[0]
     });
   },
 };

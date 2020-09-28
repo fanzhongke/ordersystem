@@ -56,6 +56,16 @@ export const edit_api = params => api.post('/order/edit',params)
 // ==========================店铺管理API=================================
 // 获取店铺详情api接口
 export const shopInfo_api = params => api.get('/shop/info',params)
+// 修改店铺内容api接口
+export const updateShop_api = params => api.post('/shop/edit',params)
+
+// ==========================报表统计API=================================
+// 获取首页报表api接口
+export const main_api = () => api.get('/order/totaldata')
+// 获取订单报表api接口
+export const orderReport_api = params => api.get('/order/ordertotal',params)
+
+
 
 
 

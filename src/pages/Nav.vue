@@ -2,8 +2,8 @@
   <el-container>
     <el-aside width="200px">
       <div class="head">
-        <img :src="head.src" alt />
-        <span>{{ head.name }}</span>
+        <img :src="avatar" alt />
+        <span>{{ name }}</span>
       </div>
       <el-menu
         router
@@ -63,12 +63,13 @@
 </template>
 
 <script>
-import { token_api,accountinfo_api } from "../apis/apis";
+import { token_api,accountinfo_api,shopInfo_api } from "../apis/apis";
 export default {
   data() {
     return {
       // 头像姓名
-      head: { name: "美团外卖", src: require("../assets/images/head.png") },
+      name: "",
+      avatar:"",//店铺头像
       // 右边姓名头像
       headerR: "",
       title: "您好,请登录",
@@ -164,6 +165,12 @@ export default {
       }else{
         this.title='您好,请登录'
       }
+      // 获取店铺头像及名称
+      shopInfo_api().then((res) => {
+        this.avatar ='http://127.0.0.1:5000/upload/shop/'+res.data.data.avatar;
+        this.name = res.data.data.name;
+        console.log(this.avatar);
+      });
     });
     // 获取用户信息
     accountinfo_api({params:{id:localStorage.id}}).then(res=>{
@@ -173,10 +180,9 @@ export default {
       localStorage.ctime=res.data.accountInfo.ctime
       localStorage.userGroup=res.data.accountInfo.userGroup
     })
-    // 重新渲染头像
+    // 重新渲染用户头像
     this.$bus.on('updateImg',(newImg)=>{
-      let oldUrl = this.headerR
-      let newUrl = oldUrl.substring(0,oldUrl.lastIndexOf('/')+1)
+      let newUrl = this.headerR.substring(0,this.headerR.lastIndexOf('/')+1)
       this.headerR=newUrl+newImg
     })
   },
@@ -208,8 +214,6 @@ export default {
   }
   .head {
     height: 60px;
-    padding: 10px;
-    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -217,6 +221,8 @@ export default {
     color: #fff;
     img {
       width: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
     }
   }
 }

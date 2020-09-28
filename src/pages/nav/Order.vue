@@ -1,30 +1,45 @@
 <template>
   <el-card class="container">
     <div class="top">
-      <el-form :inline="true" :model="formInline" class="demo-form-inline">
+      <el-form :inline="true" :model="search" class="demo-form-inline">
         <el-form-item label="订单号">
-          <el-input v-model="formInline.user" placeholder="订单号"></el-input>
+          <el-input
+            v-model="search.orderNo"
+            placeholder="查询的订单号"
+          ></el-input>
         </el-form-item>
         <el-form-item label="收货人">
-          <el-input v-model="formInline.user" placeholder="收货人"></el-input>
+          <el-input
+            v-model="search.consignee"
+            placeholder="收货人姓名"
+          ></el-input>
         </el-form-item>
         <el-form-item label="手机号">
-          <el-input v-model="formInline.user" placeholder="手机号"></el-input>
+          <el-input
+            v-model="search.phone"
+            placeholder="输入查询手机号"
+          ></el-input>
         </el-form-item>
         <el-form-item label="订单状态">
-          <el-input v-model="formInline.user" placeholder="订单状态"></el-input>
+          <el-select v-model="search.orderState" placeholder="请选择订单状态">
+            <el-option label="全部" value="全部"></el-option>
+            <el-option label="受理中" value="受理中"></el-option>
+            <el-option label="已受理" value="已受理"></el-option>
+            <el-option label="派送中" value="派送中"></el-option>
+            <el-option label="已完成" value="已完成"></el-option>
+          </el-select>
         </el-form-item>
-        <div class="block">
-          <span class="demonstration">选择时间</span>
+        <el-form-item label="选择时间">
           <el-date-picker
-            class="dateSelection"
+            v-model="search.value1"
             type="datetimerange"
-            range-separator="至"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
-          ></el-date-picker>
-          <el-button type="primary">查询</el-button>
-        </div>
+            :default-time="['12:00:00']"
+          >
+          </el-date-picker>
+        </el-form-item>
+        <el-button type="primary" @click="searchBtn">查询</el-button>
       </el-form>
     </div>
     <!-- 表格 -->
@@ -186,33 +201,34 @@
 </template>
 
 <script>
-
-import { orderList_api, detail_api,edit_api } from "../../apis/apis";
-import { ChinaTime,UTCTime } from "../../utils/utils";
+import { orderList_api, detail_api, edit_api } from "../../apis/apis";
+import { ChinaTime } from "../../utils/utils";
 export default {
   data() {
     return {
-      formInline: {
-        user: "",
-        region: "",
+      search: {
+        orderNo: "", //订单号
+        consignee: "", //收货人
+        phone: "", //联系电话
+        orderState: "", //订单状态
+        value1: [new Date(), new Date()],
       },
-      value1: [new Date(2000, 10, 10, 10, 10), new Date(2000, 10, 11, 10, 10)],
       currentPage: 1, //当前页数
       pageSize: 4, //页条数
       tableData: [], //总数据
       total: 1, //总条数
-      // 修改时的数据
+      // 修改时发送的数据
       form: {
-        id: 0,
-        orderNo: "",
-        orderTime: "",
-        phone: "",
-        consignee: "",
-        deliverAddress: "",
-        deliveryTime: "",
-        remarks: "",
-        orderAmount: "",
-        orderState: "",
+        id: 0, //订单id
+        orderNo: "", //订单号
+        orderTime: "", //下单时间
+        phone: "", //联系电话
+        consignee: "", //收货人
+        deliverAddress: "", //送货地址
+        deliveryTime: "", //送达时间
+        remarks: "", //备注
+        orderAmount: "", //订单金额
+        orderState: "", //订单状态
       },
       dialogVisible: false, //订单详情弹框状态
       dialogFormVisible: false, //修改当前订单弹框状态
@@ -221,8 +237,9 @@ export default {
   methods: {
     // 获取列表数据
     changeDate() {
-      let { currentPage, pageSize } = this;
-      orderList_api({ params: { currentPage, pageSize } }).then((res) => {
+      let { currentPage, pageSize  } = this;
+      // this.search.value1 = JSON.stringify(this.search.value1)
+      orderList_api({ params: { currentPage, pageSize,orderNo:this.search.orderNo,consignee:this.search.consignee,phone:this.search.phone,orderState:this.search.orderState,value1: this.search.value1} }).then((res) => {
         //  时间转化
         for (const item of res.data.data) {
           item.orderTime = ChinaTime(item.orderTime);
@@ -243,21 +260,20 @@ export default {
     },
     // 确定更改当前订单
     updateOrder() {
-      this.form.deliveryTime=UTCTime(this.form.deliveryTime)
-       this.form.orderTime=UTCTime(this.form.orderTime)
-      // console.log(this.form);
-      edit_api(this.form).then(res=>{
-        if (res.status==200) {
+      this.form.deliveryTime = ChinaTime(this.form.deliveryTime);
+      // 发送请求
+      edit_api(this.form).then((res) => {
+        if (res.status == 200) {
           this.$message({
-          type: "success",
-          message: "订单修改成功!",
-        });
-        this.dialogFormVisible = false
-        this.changeDate()
+            type: "success",
+            message: "订单修改成功!",
+          });
+          this.dialogFormVisible = false;
+          this.changeDate();
         }
-      })
+      });
     },
-    // 查看
+    // 查看详情
     handleClick(row) {
       console.log(row.id);
       // 显示弹框
@@ -280,6 +296,13 @@ export default {
       this.currentPage = val;
       this.changeDate();
     },
+    // 查询功能按钮
+    searchBtn() {
+      // 弹出模态框
+      // console.log(this.search);
+      this.form=this.search
+      this.changeDate()
+    },
   },
   created() {
     this.changeDate();
@@ -293,15 +316,6 @@ export default {
   .top {
     margin-left: 10px;
     margin-bottom: 10px;
-    .block {
-      .demonstration {
-        color: #606266;
-      }
-      .dateSelection {
-        margin: 0 10px !important;
-        width: 300px;
-      }
-    }
   }
   .bottom {
     margin: 10px 0;
