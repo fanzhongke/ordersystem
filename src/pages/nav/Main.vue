@@ -2,52 +2,116 @@
   <div class="container">
     <!-- 表格数据 -->
     <div class="title">
-      <el-card class="title-c" v-for="item in tableList" :key="item.id">
-        <img :src="item.src" alt />
+      <div class="title-c">
+        <img :src="imgs.allOrderImg" alt />
         <div class="right">
-          <span>{{item.name}}</span>
-          <span>{{item.number}}</span>
+          <span>{{ orderAllName }}</span>
+          <span>{{ totalOrder }}</span>
         </div>
-      </el-card>
+      </div>
+      <div class="title-c">
+        <img :src="imgs.allSalesImg" alt />
+        <div class="right">
+          <span>{{ saleAllName }}</span>
+          <span>{{ totalAmount }}</span>
+        </div>
+      </div>
+      <div class="title-c">
+        <img :src="imgs.orderImg" alt />
+        <div class="right">
+          <span>{{ todayOrderName }}</span>
+          <span>{{ todayOrder }}</span>
+        </div>
+      </div>
+      <div class="title-c">
+        <img :src="imgs.salesImg" alt />
+        <div class="right">
+          <span>{{ todaySaleName }}</span>
+          <span>{{ totayAmount }}</span>
+        </div>
+      </div>
     </div>
     <!-- 内容 -->
-    <el-card class="content">
-      <h1>数据统计echarts</h1>
-    </el-card>
+    <el-card id="content"></el-card>
   </div>
 </template>
 
 <script>
+import { main_api } from "../../apis/apis";
+import echarts from "echarts";
 export default {
   data() {
     return {
-      tableList: [
-        {
-          id: 0,
-          src: require("../../assets/images/allOrder.png"),
-          name: "总订单",
-          number: 100.243,
-        },
-        {
-          id: 1,
-          src: require("../../assets/images/order.png"),
-          name: "今日订单",
-          number: 101.1,
-        },
-        {
-          id: 2,
-          src: require("../../assets/images/allSales.png"),
-          name: "总销售额",
-          number: 182.043,
-        },
-        {
-          id: 3,
-          src: require("../../assets/images/sales.png"),
-          name: "今日销售额",
-          number: 101.3,
-        },
-      ],
+      orderAllName: "总订单",
+      saleAllName: "总销售额",
+      todayOrderName: "今日订单数",
+      todaySaleName: "今日销售额",
+      totalOrder:0,//总订单
+      totalAmount:0,//总销售额
+      todayOrder:0,//今日订单数
+      totayAmount:0,//今日销售额
+      // 图片
+      imgs : {
+        allOrderImg:require('../../assets/images/allOrder.png'),
+        allSalesImg:require('../../assets/images/allSales.png'),
+        orderImg:require('../../assets/images/order.png'),
+        salesImg:require('../../assets/images/sales.png'),
+      }
     };
+  },
+  mounted() {
+    main_api().then((res) => {
+      this.totalOrder=res.data.totalOrder
+      this.totalAmount=res.data.totalAmount
+      this.todayOrder=res.data.todayOrder
+      this.totayAmount=res.data.totayAmount
+      var myChart = echarts.init(document.querySelector("#content"));
+      var option = {
+        title: {
+          text: "金额订单报表",
+        },
+        tooltip: {
+          trigger: "axis",
+        },
+        legend: {
+          data: ["金额数据", "订单数据"],
+        },
+        grid: {
+          left: "3%",
+          right: "4%",
+          bottom: "3%",
+          containLabel: true,
+        },
+        toolbox: {
+          feature: {
+            saveAsImage: {},
+          },
+        },
+        xAxis: {
+          type: "category",
+          boundaryGap: false,
+          data: res.data.xData,
+        },
+        yAxis: {
+          type: "value",
+        },
+        series: [
+          {
+            name: "金额数据",
+            type: "line",
+            stack: "总量",
+            data: res.data.amountData,
+          },
+          {
+            name: "订单数据",
+            type: "line",
+            stack: "总量",
+            data: res.data.orderData,
+          },
+        ],
+      };
+      myChart.setOption(option);
+    });
   },
 };
 </script>
@@ -56,39 +120,41 @@ export default {
 .container {
   height: 100%;
   display: flex;
+  padding-bottom: 30px;
+  box-sizing: border-box;
   flex-direction: column;
   .title {
     width: 100%;
     display: flex;
     justify-content: space-between;
     color: #606266;
+    margin-bottom: 20px;
     .title-c {
       display: flex;
+      padding: 10px;
       align-items: center;
-      justify-content: space-around;
-      width: 22.5%;
-      padding: 20px 0;
-      box-sizing: border-box;
+      justify-content: center;
+      width: 20%;
       background-color: #fff;
-      img {
-        width: 60px;
-      }
-      .right {
+      font-weight: bold;
+      .right{
         display: flex;
         flex-direction: column;
         align-items: center;
-        font-size: 18px;
-        color: #606266;
-        span:last-child {
-          font-weight: bold;
+        span:last-child{
           color: #000;
         }
       }
+      img{
+        width: 60px;
+      }
     }
   }
-  .content {
-    margin-top: 40px;
+  #content {
+    padding: 20px;
+    box-sizing: border-box;
     width: 100%;
+    height: 400px;
     flex: 1;
   }
 }

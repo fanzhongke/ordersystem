@@ -1,48 +1,117 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Login from '../pages/Login'
-Vue.use(VueRouter)
+import Vue from "vue";
+import VueRouter from "vue-router";
+import Login from "../pages/Login";
 
-export default new VueRouter({
-  mode: 'history',    //历史模式   
+import {token_api} from '../apis/apis'
+Vue.use(VueRouter);
+
+var router = new VueRouter({
+  mode: "history", //历史模式
   base: process.env.BASE_URL,
   routes: [
     {
-      path: '/',
-      name: 'login',
-      component: Login
+      path: "/",
+      name: "login",
+      component: Login,
     },
     {
-      path: '/nav',
-      name: 'nav',
+      path: "/nav",
+      name: "nav",
       // 懒加载组件
-      component: () => import('../pages/Nav'),
+      component: () => import("../pages/Nav"),
       children: [
         // 首页
-        { path: '/nav/main', name: '/nav/main', component: () => import('../pages/nav/Main') },
+        {
+          path: "/nav/main",
+          name: "/nav/main",
+          component: () => import("../pages/nav/Main"),
+        },
         // 订单管理
-        { path: '/nav/order', name: '/nav/order', component: () => import('../pages/nav/Order') },
+        {
+          path: "/nav/order",
+          name: "/nav/order",
+          component: () => import("../pages/nav/Order"),
+        },
         // 商品列表
-        { path: '/nav/orderlist', name: '/nav/orderlist', component: () => import('../pages/nav/OrderList') },
+        {
+          path: "/nav/orderlist",
+          name: "/nav/orderlist",
+          component: () => import("../pages/nav/OrderList"),
+        },
         // 商品添加
-        { path: '/nav/orderadd', name: '/nav/orderadd', component: () => import('../pages/nav/OrderAdd') },
+        {
+          path: "/nav/orderadd",
+          name: "/nav/orderadd",
+          component: () => import("../pages/nav/OrderAdd"),
+        },
         // 商品分类
-        { path: '/nav/ordersort', name: '/nav/ordersort', component: () => import('../pages/nav/OrderSort') },
+        {
+          path: "/nav/ordersort",
+          name: "/nav/ordersort",
+          component: () => import("../pages/nav/OrderSort"),
+        },
         // 店铺管理
-        { path: '/nav/store', name: '/nav/store', component: () => import('../pages/nav/Store') },
+        {
+          path: "/nav/store",
+          name: "/nav/store",
+          component: () => import("../pages/nav/Store"),
+        },
         // 账号列表
-        { path: '/nav/accountlist', name: '/nav/accountlist', component: () => import('../pages/nav/AccountList') },
+        {
+          path: "/nav/accountlist",
+          name: "/nav/accountlist",
+          component: () => import("../pages/nav/AccountList"),
+        },
         // 添加账号
-        { path: '/nav/accountadd', name: '/nav/accountadd', component: () => import('../pages/nav/AccountAdd') },
+        {
+          path: "/nav/accountadd",
+          name: "/nav/accountadd",
+          component: () => import("../pages/nav/AccountAdd"),
+        },
         // 修改密码
-        { path: '/nav/changepassword', name: '/nav/changepassword', component: () => import('../pages/nav/ChangePassword') },
+        {
+          path: "/nav/changepassword",
+          name: "/nav/changepassword",
+          component: () => import("../pages/nav/ChangePassword"),
+        },
         // 商品统计
-        { path: '/nav/productstatistics', name: '/nav/productstatistics', component: () => import('../pages/nav/ProductStatistics') },
+        {
+          path: "/nav/productstatistics",
+          name: "/nav/productstatistics",
+          component: () => import("../pages/nav/ProductStatistics"),
+        },
         // 订单统计
-        { path: '/nav/orderstatistics', name: '/nav/orderstatistics', component: () => import('../pages/nav/OrderStatistics') },
+        {
+          path: "/nav/orderstatistics",
+          name: "/nav/orderstatistics",
+          component: () => import("../pages/nav/OrderStatistics"),
+        },
         // 管理员
-        { path: '/nav/admin', name: '/nav/admin', component: () => import('../pages/nav/Admin') },
-      ]
-    }
-  ]
+        {
+          path: "/nav/admin",
+          name: "/nav/admin",
+          component: () => import("../pages/nav/Admin"),
+        },
+      ],
+    },
+  ],
+});
+router.beforeEach((to,from,next)=>{
+  from
+  if (to.path != '/') {
+    // 拦截
+    // token验证
+    token_api({ params: {token:localStorage.token }}).then(res=>{
+      if (res.data.code==0) {
+        // 放行
+        next()
+      }else{
+        alert('非法进入,请先登录')
+        next('/')
+      }
+    })
+  } else {
+    next()//放行
+  }
 })
+export default router;

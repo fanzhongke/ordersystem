@@ -1,28 +1,18 @@
 <template>
   <el-card class="container">
     <div class="top">
-      <el-form :inline="true" :model="search" class="demo-form-inline">
+      <el-form :inline="true" class="demo-form-inline">
         <el-form-item label="订单号">
-          <el-input
-            v-model="search.orderNo"
-            placeholder="查询的订单号"
-          ></el-input>
+          <el-input v-model="orderNo" placeholder="查询的订单号"></el-input>
         </el-form-item>
         <el-form-item label="收货人">
-          <el-input
-            v-model="search.consignee"
-            placeholder="收货人姓名"
-          ></el-input>
+          <el-input v-model="consignee" placeholder="收货人姓名"></el-input>
         </el-form-item>
         <el-form-item label="手机号">
-          <el-input
-            v-model="search.phone"
-            placeholder="输入查询手机号"
-          ></el-input>
+          <el-input v-model="phone" placeholder="输入查询手机号"></el-input>
         </el-form-item>
         <el-form-item label="订单状态">
-          <el-select v-model="search.orderState" placeholder="请选择订单状态">
-            <el-option label="全部" value="全部"></el-option>
+          <el-select v-model="orderState" placeholder="请选择订单状态">
             <el-option label="受理中" value="受理中"></el-option>
             <el-option label="已受理" value="已受理"></el-option>
             <el-option label="派送中" value="派送中"></el-option>
@@ -31,11 +21,11 @@
         </el-form-item>
         <el-form-item label="选择时间">
           <el-date-picker
-            v-model="search.value1"
+            v-model="time"
             type="datetimerange"
+            range-separator="至"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
-            :default-time="['12:00:00']"
           >
           </el-date-picker>
         </el-form-item>
@@ -206,17 +196,18 @@ import { ChinaTime } from "../../utils/utils";
 export default {
   data() {
     return {
-      search: {
-        orderNo: "", //订单号
-        consignee: "", //收货人
-        phone: "", //联系电话
-        orderState: "", //订单状态
-        value1: [new Date(), new Date()],
-      },
+      // 查询时的字段
+      orderNo: "", //订单号
+      consignee: "", //收货人
+      phone: "", //联系电话
+      orderState: "", //订单状态
+      time: [new Date("2020-05-01 09:00:00"), new Date()],
+
       currentPage: 1, //当前页数
       pageSize: 4, //页条数
-      tableData: [], //总数据
-      total: 1, //总条数
+      tableData: [], //表格数据
+      total: 0, //总条数
+
       // 修改时发送的数据
       form: {
         id: 0, //订单id
@@ -236,15 +227,17 @@ export default {
   },
   methods: {
     // 获取列表数据
-    changeDate() {
-      let { currentPage, pageSize  } = this;
-      // this.search.value1 = JSON.stringify(this.search.value1)
-      orderList_api({ params: { currentPage, pageSize,orderNo:this.search.orderNo,consignee:this.search.consignee,phone:this.search.phone,orderState:this.search.orderState,value1: this.search.value1} }).then((res) => {
+    changeDate(obj = {}) {
+      orderList_api({
+        params: {
+          currentPage: this.currentPage,
+          pageSize: this.pageSize,
+          ...obj,
+        },
+      }).then((res) => {
         //  时间转化
         for (const item of res.data.data) {
           item.orderTime = ChinaTime(item.orderTime);
-        }
-        for (const item of res.data.data) {
           item.deliveryTime = ChinaTime(item.deliveryTime);
         }
         this.tableData = res.data.data;
@@ -298,10 +291,13 @@ export default {
     },
     // 查询功能按钮
     searchBtn() {
-      // 弹出模态框
-      // console.log(this.search);
-      this.form=this.search
-      this.changeDate()
+      this.changeDate({
+        orderNo: this.orderNo,
+        consignee: this.consignee,
+        phone: this.phone,
+        orderState: this.orderState,
+        time: JSON.stringify([ChinaTime(this.time[0]), ChinaTime(this.time[1])]),
+      });
     },
   },
   created() {
