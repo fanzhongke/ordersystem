@@ -223,6 +223,8 @@ export default {
       },
       dialogVisible: false, //订单详情弹框状态
       dialogFormVisible: false, //修改当前订单弹框状态
+
+      issend: true, //防抖节流
     };
   },
   methods: {
@@ -282,21 +284,57 @@ export default {
     // 点击每页显示数据切换函数
     handleSizeChange(val) {
       this.pageSize = val;
+      if (!this.issend) {
+        this.$message({
+          message: "你操作的太频繁了,请稍后再试",
+          type: "warning",
+        });
+        return;
+      }
+      this.issend = false;
+      setTimeout(() => {
+        this.issend = true;
+      }, 500);
       this.changeDate();
     },
     // 点击跳转页面触发的函数
     handleCurrentChange(val) {
       this.currentPage = val;
+      if (!this.issend) {
+        this.$message({
+          message: "你操作的太频繁了,请稍后再试",
+          type: "warning",
+        });
+        return;
+      }
+      this.issend = false;
+      setTimeout(() => {
+        this.issend = true;
+      }, 500);
       this.changeDate();
     },
     // 查询功能按钮
     searchBtn() {
+      if (!this.issend) {
+        this.$message({
+          message: '你操作的太频繁了,请稍后再试',
+          type: 'warning'
+        });
+        return
+      }
+      this.issend=false
+      setTimeout(()=>{
+        this.issend=true
+      },1000)
       this.changeDate({
         orderNo: this.orderNo,
         consignee: this.consignee,
         phone: this.phone,
         orderState: this.orderState,
-        time: JSON.stringify([ChinaTime(this.time[0]), ChinaTime(this.time[1])]),
+        time: JSON.stringify([
+          ChinaTime(this.time[0]),
+          ChinaTime(this.time[1]),
+        ]),
       });
     },
   },

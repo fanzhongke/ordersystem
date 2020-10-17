@@ -39,6 +39,13 @@ export default {
   methods: {
     // 添加账号
     addUser() {
+      if (this.name==""&&this.pwd=='') {
+        this.$message({
+          message: '请输入用户名或密码',
+          type: 'warning'
+        });
+        return
+      }
       addUser_api({
         account: this.name,
         password: this.pwd,

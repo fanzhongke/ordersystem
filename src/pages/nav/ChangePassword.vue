@@ -4,9 +4,19 @@
       <span>修改密码</span>
     </div>
     <div class="content">
-      <el-form status-icon ref="ruleForm" label-width="100px" class="demo-ruleForm form">
+      <el-form
+        status-icon
+        ref="ruleForm"
+        label-width="100px"
+        class="demo-ruleForm form"
+      >
         <el-form-item label="旧密码">
-          <el-input v-model="oldPwd" type="password" show-password @blur="checkoldpwd"></el-input>
+          <el-input
+            v-model="oldPwd"
+            type="password"
+            show-password
+            @blur="checkoldpwd"
+          ></el-input>
           <span v-show="isError">密码未输入或错误</span>
         </el-form-item>
         <el-form-item label="新密码">
@@ -34,7 +44,7 @@ export default {
       newPwd: "",
       againPwd: "",
       isError: false,
-      isPwd:false,
+      isPwd: false,
       id: localStorage.id,
     };
   },
@@ -46,36 +56,37 @@ export default {
         this.isError = true;
         return false;
       }
-      // 新密码/确认密码未输入或者不相同
-      if (!(this.newPwd==this.againPwd)||this.newPwd==''||this.againPwd=='') {
-        this.isError = true;
-        return false
-      }
       let { oldPwd, id } = this;
       oldPwd_api({ params: { oldPwd, id } }).then((res) => {
         if (res.data.code == 0) {
           this.isError = false;
+        } else {
+          this.isError = true;
+          return false;
         }
       });
     },
     // 修改密码函数
     updatePwd() {
       if (this.newPwd == this.againPwd) {
-        if (this.againPwd=='') {
-          return false
+        if (this.againPwd == "" && this.newPwd == "") {
+          this.$message({
+            message: "未填写修改的",
+            type: "warning",
+          });
+          return false;
         }
-        this.isPwd=false
+        this.isPwd = false;
         let { newPwd, id } = this;
         updatePwd_api({ newPwd, id }).then(() => {
           this.$message({
             message: "小米粥提示:密码修改成功,请重新登录",
             type: "success",
-            
           });
           this.$router.push("/");
         });
       } else {
-        this.isPwd=true
+        this.isPwd = true;
       }
     },
   },

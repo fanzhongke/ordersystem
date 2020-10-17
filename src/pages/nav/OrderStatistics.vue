@@ -26,6 +26,7 @@ export default {
       date: [new Date("2020-05-01"), new Date()],
       time: [],
       amount: [],
+      issend:true//防抖节流
     };
   },
   mounted() {
@@ -33,17 +34,13 @@ export default {
   },
   methods: {
     changeDate() {
-      let { date } = this.date;
-      date = JSON.stringify([ChinaDate(this.date[0]), ChinaDate(this.date[1])]);
-      orderReport_api({ params: { date } }).then((res) => {
-        let amount = res.data.data.map((item) => {
-          return item.orderAmount;
-        });
-        let time = res.data.data.map((item) => {
-          return ChinaDate(item.orderTime);
-        });
-        this.time = time;
-        this.amount = amount;
+      let dateArr = JSON.stringify([ChinaDate(this.date[0]), ChinaDate(this.date[1])]);
+      orderReport_api({ params: { date:dateArr } }).then((res) => {
+        for (const item of res.data.data) {
+          item.orderTime=ChinaDate(item.orderTime)
+          this.time.push(item.orderTime)
+          this.amount.push(item.orderAmount)
+        }
         var myChart = echarts.init(document.querySelector("#content"));
         var option = {
           tooltip: {
@@ -95,11 +92,24 @@ export default {
             },
           ],
         };
+
+        
         myChart.setOption(option);
       });
     },
     // 搜索
     searchBtn() {
+      if (!this.issend) {
+        this.$message({
+          message: '你操作的太频繁了,请稍后再试',
+          type: 'warning'
+        });
+        return
+      }
+      this.issend=false
+      setTimeout(()=>{
+        this.issend=true
+      },1000)
       this.changeDate();
     },
   },

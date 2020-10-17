@@ -63,7 +63,7 @@ export default {
         name: "",//商品名称
         category: "",//商品分类
         goodsDesc: "",//商品描述
-        price: 1,//商品描述
+        price: 1,//商品价格
         imgUrl: "",//商品图片
       },
       categories: [],//商品分类列表
@@ -80,8 +80,14 @@ export default {
     },
     // 商品添加按钮
     goodsAdd() {
+      if (this.form.name==''&&this.form.goodsDesc==''&&this.form.imgUrl=='') {
+        this.$message({
+          message: '添加的商品信息不完整',
+          type: 'warning'
+        });
+        return false
+      }
       this.form.category=this.form.category.cateName
-      // console.log(this.form);
       addGoods_api(this.form).then((res) => {
         this.$message({
           type: "success",

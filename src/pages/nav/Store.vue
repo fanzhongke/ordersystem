@@ -181,15 +181,18 @@ export default {
       }
       // 添加元素
       this.supportsList.push(this.support);
+      
     },
     // 移除活动
     removeActive() {
       if (this.supportsVal == "") {
         return this.$message.error("未选择删除的活动");
       }
-      this.supportsVal.splice(0);
-      console.log(this.supportsVal);
-      console.log(this.supportsList);
+      let newArr = this.supportsList.filter((item)=>{
+        return !this.supportsVal.includes(item)
+      })
+      this.supportsList=newArr
+      this.listData.supports=this.supportsList
     },
     // 保存发送请求
     saveBtn() {
@@ -200,6 +203,7 @@ export default {
       obj.supports = JSON.stringify(this.supportsVal);
       obj.date = JSON.stringify([ChinaTime(date[0]), ChinaTime(date[1])]);
       obj.pics = JSON.stringify(this.shopPictures);
+      console.log(obj);
       if (obj.supports=='[]') {
         this.$message({
           message: '请选择商品进行的活动',
@@ -213,6 +217,7 @@ export default {
           message: "修改成功!",
         });
         this.changeDate();
+        history.go()
       });
     },
   },

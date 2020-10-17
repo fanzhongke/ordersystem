@@ -165,6 +165,7 @@ export default {
         id: 0,
       },
       categories: [],
+      issend:true,//防抖节流
     };
   },
   methods: {
@@ -218,11 +219,33 @@ export default {
     // 切换页面条数函数
     handleSizeChange(val) {
       this.pageSize = val;
+      if (!this.issend) {
+        this.$message({
+          message: '你操作的太频繁了,请稍后再试',
+          type: 'warning'
+        });
+        return
+      }
+      this.issend=false
+      setTimeout(()=>{
+        this.issend=true
+      },500)
       this.changGoodsList();
     },
     // 切换当前页函数
     handleCurrentChange(val) {
       this.currentPage = val;
+      if (!this.issend) {
+        this.$message({
+          message: '你操作的太频繁了,请稍后再试',
+          type: 'warning'
+        });
+        return
+      }
+      this.issend=false
+      setTimeout(()=>{
+        this.issend=true
+      },500)
       this.changGoodsList();
     },
     // 图片上传

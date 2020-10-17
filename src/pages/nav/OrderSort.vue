@@ -104,6 +104,7 @@ export default {
       showMoDal: false, //添加分类弹框状态
       cateName: "",//添加分类名称
       state: true,//添加分类启用状态
+      issend:true//防抖节流
     };
   },
   methods: {
@@ -189,11 +190,33 @@ export default {
     // 页面条数
     handleSizeChange(val) {
       this.pageSize = val;
+      if (!this.issend) {
+        this.$message({
+          message: '你操作的太频繁了,请稍后再试',
+          type: 'warning'
+        });
+        return
+      }
+      this.issend=false
+      setTimeout(()=>{
+        this.issend=true
+      },500)
       this.changeDate();
     },
     // 当前页面
     handleCurrentChange(val) {
       this.currentPage = val;
+      if (!this.issend) {
+        this.$message({
+          message: '你操作的太频繁了,请稍后再试',
+          type: 'warning'
+        });
+        return
+      }
+      this.issend=false
+      setTimeout(()=>{
+        this.issend=true
+      },500)
       this.changeDate();
     },
     // 获取所有分类

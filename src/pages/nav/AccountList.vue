@@ -59,7 +59,6 @@
       </div>
       <div>
         <el-button type="danger" @click="removeAll" plain>批量删除</el-button>
-        <el-button type="success" plain>取消选择</el-button>
       </div>
     </div>
     <el-dialog
@@ -112,6 +111,7 @@ export default {
       options: ["超级管理员", "普通管理员"],
       dialogFormVisible: false,
       formLabelWidth: "100px",
+      issend:true//防抖节流
     };
   },
   methods: {
@@ -154,11 +154,33 @@ export default {
     // 点击每页显示数据切换函数
     handleSizeChange(val) {
       this.pageSize = val;
+      if (!this.issend) {
+        this.$message({
+          message: '你操作的太频繁了,请稍后再试',
+          type: 'warning'
+        });
+        return
+      }
+      this.issend=false
+      setTimeout(()=>{
+        this.issend=true
+      },500)
       this.changeDate();
     },
     // 点击跳转页面触发的函数
     handleCurrentChange(val) {
       this.currentPage = val;
+      if (!this.issend) {
+        this.$message({
+          message: '你操作的太频繁了,请稍后再试',
+          type: 'warning'
+        });
+        return
+      }
+      this.issend=false
+      setTimeout(()=>{
+        this.issend=true
+      },500)
       this.changeDate();
     },
     // 修改管理函数
